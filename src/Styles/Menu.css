@@ -1,0 +1,29 @@
+.start-menu-container{
+    width: 50%;
+    height: 15%;
+    background-color: #264653;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 10%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.colors{
+    width:60px;
+    height: 60px;
+    border-radius: 50%;
+    transition: border-color 300ms ease, transform 0.3s ease-in-out;
+    border: 2px solid transparent;
+
+}
+
+.colors:hover{
+    border-color: aliceblue;
+    transform: scale(1.2);
+
+}

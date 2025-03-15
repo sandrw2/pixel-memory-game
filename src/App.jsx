@@ -10,7 +10,7 @@ import './Styles/App.css'
 function App(){
     const[gameState, setGameState] = useState("start");
     const [playableCharacters, setPlayableCharacters] = useState(Characters.red);
-    const [color, setColor] = useState("red"); 
+    const [color, setColor] = useState("white"); 
     const [sound, setSound] = useState(true);
 
     function handleColorChange(color){
@@ -20,9 +20,9 @@ function App(){
 
     
     return(
-        <div className='background'>
+        <div className='background' style={{backgroundColor:color}}>
                 <Pokeball handleStateChange = {setGameState} gameState = {gameState}/>
-                {gameState === "menu" && <StartPage handleColorChange={setColor} handleSoundChange={setSound} />}
+                {gameState === "menu" && <StartPage handleColorChange={setColor} handleStateChange ={setGameState} />}
                 {gameState === "playing" && <PlayingPage />}
                 {gameState === "gameOver" && <GameOver />}
                 

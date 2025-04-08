@@ -138,7 +138,6 @@ export default function PlayingPage({color, size, handleStateChange}) {
         }
 
 
-
         return {
           ...pokemon, 
           position: {x: newX, y: newY},

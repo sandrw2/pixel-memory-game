@@ -21,7 +21,7 @@ function App(){
         <div className='background' style={{backgroundColor:color.value}}>
                 <Pokeball handleStateChange = {setGameState} gameState = {gameState}/>
                 {gameState === "menu" && <StartPage handleColorChange={setColor} handleStateChange ={setGameState} />}
-                {gameState === "playing" && <PlayingPage color = {color.name} size = {10}/>}
+                {gameState === "playing" && <PlayingPage color = {color.name} size = {30} handleStateChange = {setGameState}/>}
                 {gameState === "gameOver" && <GameOver />}
                 
         </div>

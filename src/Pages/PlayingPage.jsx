@@ -4,13 +4,14 @@ import {motion, AnimatePresence} from 'framer-motion';
 import {Pokedex} from "pokeapi-js-wrapper";
 
 //Cache Data Next
-export default function PlayingPage({color, size}) {
+export default function PlayingPage({color, size, handleStateChange}) {
   const [pokemons, setPokemons] = useState([]); // State to holds pokemon info --> name, img, positions
   const [loading, setLoading] = useState(true); // Loading state
+  const [clickedPokemons, setClickedPokemons] = useState([]);
   const hasFetched = useRef(false);
-  
+  const SPEED = 200;
 
-  const fetchPokemons = async () => {
+  async function fetchPokemons(){
     console.log('Fetching Pokemon Data');
     const P = new Pokedex();
     const pokemonColorList = await P.getPokemonColorByName(color);
@@ -35,13 +36,62 @@ export default function PlayingPage({color, size}) {
           name: pokeInfo.name, 
           id: pokeInfo.id, 
           imgUrl:pokeInfo.sprites.front_default,
-          position: {x: Math.random() * 80 + "vw", y: Math.random() * 80 + "vh"}
+          position: getRandomPosition(),
+          velocity: getRandomVelocity(),
+          clicked: false
         } 
       );
     }
     
     return randomPokemons
   };
+
+  function getRandomPosition(){
+    return {
+      x: Math.random() * (window.innerWidth - 100), 
+      y: Math.random() * (window.innerHeight - 100)
+    }
+  }
+
+  function getRandomVelocity(){
+    return {
+      x: (Math.random() - 0.5) * 8,
+      y: (Math.random() - 0.5) * 8
+
+    };
+  }
+
+  
+
+  //handle pokemon click -> 
+  // 1) pokemon hasnt been chosen before -> add another one of it's sprite to the list
+  // 2) pokemon has been chosen before -> queue game over 
+  function pokemonClick(pokemon){
+    if (pokemon.click != true){
+      //Update Score
+      //Add duplicate pokemon into seen array 
+      //Update pokemon click to True
+      const newPokemonSet = pokemons.map((pokemon)=>{
+        if(pokemon.id == pokemon.id){
+          return {...pokemon, clicked: true}
+        }
+      })
+      setPokemons(newPokemonSet);
+
+      const newClickedPokemons = [...clickedPokemons, {
+        id: pokemon.id.toString()+"copy", 
+        imgUrl: pokemon.imgUrl, 
+        position: getRandomPosition(),
+        velocity: getRandomVelocity()
+      }]
+      setClickedPokemons(newClickedPokemons);
+        
+      setClickedPokemons([...clickedPokemons, pokemon.id]);
+    }else{
+      //Return updates score!
+      handleStateChange("gameOver");
+    }
+  } 
 
   useEffect(() => {
     if (hasFetched.current) return; // Prevent duplicate fetch
@@ -64,13 +114,40 @@ export default function PlayingPage({color, size}) {
   useEffect(() => {
     const interval = setInterval(() => {
       setPokemons((prevPokemons) =>
-      prevPokemons.map((pokemon) => ({
-        ...pokemon,
-        position: {x: Math.random() * 80 + 'vw', y: Math.random() * 80 + 'vh'}
-      }))
+      prevPokemons.map((pokemon) => {
+        let newX = pokemon.position.x + pokemon.velocity.x;
+        let newY = pokemon.position.y + pokemon.velocity.y;
+        let newV = {x: pokemon.velocity.x, y:pokemon.velocity.y};
+      
+
+        if (newY < 0) {
+          newV.y = newV.y * -1;
+          newY = 0;
+        } else if (newY > window.innerHeight - 100) {
+          newV.y = newV.y * -1;
+          newY = window.innerHeight - 100;
+        }
+
+        //Check if past boundaries 
+        if (newX < 0) {
+          newV.x = newV.x * -1;
+          newX = 0; // Set position to boundary
+        } else if (newX > window.innerWidth - 100) {
+          newV.x = newV.x * -1;
+          newX = window.innerWidth - 100;
+        }
+
+
+
+        return {
+          ...pokemon, 
+          position: {x: newX, y: newY},
+          velocity: newV
+        };
+      })
     );
-    }, 2000); // Move every second
-    
+    }, 50); // Move every second
+  
     return () => clearInterval(interval); // Cleanup
   }, []);
 
@@ -87,14 +164,34 @@ export default function PlayingPage({color, size}) {
         return(
           <motion.img
             key={pokemon.id}
+            onClick={()=>pokemonClick(pokemon)}
             src={pokemon.imgUrl}
             alt="Pokemon"
             className="pokemon-sprite"
-            animate={{ x: pokemon.position.x, y: pokemon.position.y }}
-            transition={{ duration: 1, ease: "easeInOut" }}
+            initial={{ opacity: 0, x: pokemon.position.x, y: pokemon.position.y }}
+            animate={{ opacity: 1, x: pokemon.position.x, y: pokemon.position.y }}
+            whileHover={{ scale: 1.2 }}
+            transition={{ duration: 0, ease: "linear"  }}
             style={{ position: "absolute", width: "80px" }}
           />
         );
+      })}
+
+      {clickedPokemons.map((pokemon) =>{
+        return(
+          <motion.img
+            key={pokemon.id}
+            onClick={()=>pokemonClick(pokemon)}
+            src={pokemon.imgUrl}
+            alt="Pokemon"
+            className="pokemon-sprite"
+            initial={{ opacity: 0, x: pokemon.position.x, y: pokemon.position.y }}
+            animate={{ opacity: 1, x: pokemon.position.x, y: pokemon.position.y }}
+            whileHover={{ scale: 1.2 }}
+            transition={{ duration: 0, ease: "linear" }}
+            style={{ position: "absolute", width: "80px" }}
+          />
+        )
       })}
       
     </div>
